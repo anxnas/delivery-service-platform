@@ -1,0 +1,4 @@
+-r base.txt
+
+# Обработка окружения
+python-dotenv==1.1.0
