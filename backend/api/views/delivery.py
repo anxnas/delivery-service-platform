@@ -1,4 +1,5 @@
-from django.db.models import Q
+from datetime import timedelta
+from django.db.models import Q, F
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -62,7 +63,7 @@ class DeliveryViewSet(viewsets.ModelViewSet):
             try:
                 min_duration = float(min_duration)
                 queryset = queryset.filter(
-                    arrival_datetime__gte=models.F('departure_datetime') +
+                    arrival_datetime__gte=F('departure_datetime') +
                                           timedelta(hours=min_duration)
                 )
             except (ValueError, TypeError):
@@ -73,7 +74,7 @@ class DeliveryViewSet(viewsets.ModelViewSet):
             try:
                 max_duration = float(max_duration)
                 queryset = queryset.filter(
-                    arrival_datetime__lte=models.F('departure_datetime') +
+                    arrival_datetime__lte=F('departure_datetime') +
                                           timedelta(hours=max_duration)
                 )
             except (ValueError, TypeError):
@@ -96,4 +97,3 @@ class DeliveryViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(services__id__in=service_ids).distinct()
 
         return queryset
-    
