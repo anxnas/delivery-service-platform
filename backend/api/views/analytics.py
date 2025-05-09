@@ -3,9 +3,12 @@ from django.db.models.functions import TruncDate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from api.models import Delivery
+from api.schema import analytics_schema
 
 
+@extend_schema(tags=['Аналитика'])
 class DeliveryAnalyticsView(APIView):
     """
     Представление для аналитики доставок
@@ -15,6 +18,7 @@ class DeliveryAnalyticsView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @analytics_schema
     def get(self, request):
         # Получаем параметры фильтрации
         start_date = request.query_params.get('start_date')
