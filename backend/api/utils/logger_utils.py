@@ -14,8 +14,8 @@ def setup_logging() -> None:
     # Настройка формата и уровня логирования
     logger.add(
         sys.stdout,
-        level=settings.LOG_LEV,
-        format=settings.LOG_FORMATTER,
+        level=settings.LOG_LEVEL,
+        format=settings.LOG_FORMAT,
         colorize=True,
         backtrace=True,
         diagnose=True,
@@ -28,14 +28,14 @@ def setup_logging() -> None:
         retention="30 days",  # Хранение логов 30 дней
         compression="zip",  # Сжатие старых логов
         level="DEBUG",
-        format=settings.LOG_FORMATTER,
+        format=settings.LOG_FORMAT,
     )
 
     # Перехват стандартного логгирования
     logger.add(
         sys.stderr,
         level="ERROR",
-        format=settings.LOG_FORMATTER,
+        format=settings.LOG_FORMAT,
         backtrace=True,
         diagnose=True,
     )
@@ -47,7 +47,7 @@ def setup_logging() -> None:
         retention="30 days",
         compression="zip",
         level="ERROR",
-        format=settings.LOG_FORMATTER,
+        format=settings.LOG_FORMAT,
         catch=True,  # Перехват всех необработанных исключений
     )
 

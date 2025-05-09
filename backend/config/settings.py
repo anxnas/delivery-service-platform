@@ -167,7 +167,26 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API для сервиса управления доставками',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+    },
+    'CONTACT': {
+        'name': 'anxnas',
+        'email': 'ananasicsoftwareinc@gmail.com',
+    },
+    'LICENSE': {
+        'name': 'GPL-3.0',
+    },
+    'TAGS': [
+        {'name': 'Авторизация', 'description': 'Методы для авторизации и управления профилем'},
+        {'name': 'Доставки', 'description': 'CRUD операции для доставок'},
+        {'name': 'Справочники', 'description': 'Получение данных из справочников'},
+        {'name': 'Аналитика', 'description': 'Методы для получения аналитических данных по доставкам'},
+    ],
 }
 
-LOG_LEV = "INFO"
-LOG_FORMATTER = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+LOG_LEVEL = "INFO"
+LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
