@@ -6,6 +6,9 @@ djangorestframework-simplejwt==5.5.0
 # База данных
 psycopg2-binary==2.9.9
 
+# Обработка окружения
+python-dotenv==1.1.0
+
 # CORS
 django-cors-headers==4.3.1
 
