@@ -1,12 +1,11 @@
-from rest_framework import viewsets
+from django.http import Http404
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema
+from rest_framework.response import Response
 from api.models import PackageType
 from api.serializers import PackageTypeSerializer
-from api.schema import reference_list_schema, reference_retrieve_schema
 
 
-@extend_schema(tags=['Справочники'], summary='Типы упаковки')
 class PackageTypeViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Представление для типов упаковки
@@ -18,10 +17,14 @@ class PackageTypeViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PackageTypeSerializer
     permission_classes = [IsAuthenticated]
 
-    @reference_list_schema
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @reference_retrieve_schema
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )

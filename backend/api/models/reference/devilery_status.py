@@ -9,12 +9,7 @@ class DeliveryStatus(BaseModel):
     Справочник возможных статусов доставки.
     """
 
-    class Status(models.TextChoices):
-        PENDING = "pending", "В ожидании"
-        COMPLETED = "completed", "Проведено"
-
-    name = models.CharField(max_length=100, verbose_name="Название статуса")
-    code = models.CharField(max_length=50, choices=Status.choices, verbose_name="Код статуса")
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название статуса")
     color = models.CharField(max_length=7, default="#FFFF00", verbose_name="Цвет статуса")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
 

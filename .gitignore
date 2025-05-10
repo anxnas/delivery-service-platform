@@ -58,3 +58,4 @@ local.env
 # If you are using Linux:
 *~
 /.env
+/backend/media/

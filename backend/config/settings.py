@@ -143,10 +143,10 @@ REST_FRAMEWORK = {
     ],
     'EXCEPTION_HANDLER': 'api.utils.handlers.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.utils.pagination.CustomPageNumberPagination',
     'PAGE_SIZE': 20,
 }
-
+from rest_framework.pagination import PageNumberPagination
 # Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
@@ -164,10 +164,17 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 # Spectacular API documentation settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Delivery Service API',
-    'DESCRIPTION': 'API для сервиса управления доставками',
+    'DESCRIPTION': '# API для управления службой доставки\n'
+                   'Этот API предоставляет полный набор инструментов для управления процессами доставки, включая:\n'
+                   '* Создание, просмотр, обновление и удаление доставок\n'
+                   '* Управление справочниками (статусы, транспорт, услуги)\n'
+                   '* Получение аналитических данных\n'
+                   '* Авторизацию и управление пользователями\n'
+                   '## Аутентификация\n'
+                   'API использует JWT-токены для аутентификации. Для доступа к защищенным эндпоинтам необходимо получить токен через `/api/auth/token/` и передавать его в заголовке Authorization.\n',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
+    'COMPONENT_SPLIT_REQUEST': False,
     'SWAGGER_UI_SETTINGS': {
         'deepLinking': True,
         'persistAuthorization': True,

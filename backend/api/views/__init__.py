@@ -7,7 +7,7 @@ from .reference import (
     DeliveryStatusViewSet,
     CargoTypeViewSet
 )
-from .analytics import DeliveryAnalyticsView
+from .analytics import DeliveryAnalyticsViewSet
 
 __all__ = [
     "CustomTokenObtainPairView",
@@ -19,5 +19,5 @@ __all__ = [
     "DeliveryServiceViewSet",
     "DeliveryStatusViewSet",
     "CargoTypeViewSet",
-    "DeliveryAnalyticsView"
+    "DeliveryAnalyticsViewSet"
 ]

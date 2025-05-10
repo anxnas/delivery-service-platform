@@ -1,25 +1,16 @@
 from datetime import timedelta
 from django.db.models import Q, F
+from django.http import Http404
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
 from api.models import Delivery, DeliveryStatus
 from api.serializers import DeliveryListSerializer, DeliveryDetailSerializer
-from api.schema import (
-    delivery_list_schema,
-    delivery_retrieve_schema,
-    delivery_create_schema,
-    delivery_update_schema,
-    delivery_partial_update_schema,
-    delivery_delete_schema,
-    delivery_complete_schema
-)
 
 
-@extend_schema(tags=['Доставки'])
+
 class DeliveryViewSet(viewsets.ModelViewSet):
     """
     Представление для работы с доставками
@@ -40,31 +31,48 @@ class DeliveryViewSet(viewsets.ModelViewSet):
             return DeliveryListSerializer
         return DeliveryDetailSerializer
 
-    @delivery_list_schema
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @delivery_retrieve_schema
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    @delivery_create_schema
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @delivery_update_schema
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+        try:
+            return super().update(request, *args, **kwargs)
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    @delivery_partial_update_schema
     def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
+        try:
+            return super().partial_update(request, *args, **kwargs)
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    @delivery_delete_schema
     def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    @delivery_complete_schema
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
         """
@@ -72,12 +80,19 @@ class DeliveryViewSet(viewsets.ModelViewSet):
 
         Изменяет статус доставки на "Проведено".
         """
-        delivery = self.get_object()
-        completed_status = DeliveryStatus.objects.filter(code=DeliveryStatus.Status.COMPLETED).first()
-
+        try:
+            delivery = self.get_object()
+        except Http404:
+            return Response(
+                {"detail": "Страница не найдена."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Изменяем поиск по имени вместо кода
+        completed_status = DeliveryStatus.objects.filter(name="Проведено").first()
         if not completed_status:
             return Response(
-                {"error": "Статус 'Проведено' не найден в базе данных"},
+                {"detail": "Статус 'Проведено' не найден в базе данных"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -86,6 +101,7 @@ class DeliveryViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(delivery)
         return Response(serializer.data)
+
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)

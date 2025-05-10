@@ -11,7 +11,7 @@ from .views import (
     DeliveryServiceViewSet,
     DeliveryStatusViewSet,
     CargoTypeViewSet,
-    DeliveryAnalyticsView
+    DeliveryAnalyticsViewSet
 )
 
 # Создаем роутер для ViewSet
@@ -22,15 +22,13 @@ router.register(r'package-types', PackageTypeViewSet)
 router.register(r'services', DeliveryServiceViewSet)
 router.register(r'statuses', DeliveryStatusViewSet)
 router.register(r'cargo-types', CargoTypeViewSet)
+router.register(r'analytics', DeliveryAnalyticsViewSet, basename='analytics')
 
 urlpatterns = [
     # Авторизация
     path('auth/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', UserProfileView.as_view(), name='user_profile'),
-
-    # Аналитика
-    path('analytics/deliveries/', DeliveryAnalyticsView.as_view(), name='delivery_analytics'),
 
     # ViewSet маршруты
     path('', include(router.urls)),

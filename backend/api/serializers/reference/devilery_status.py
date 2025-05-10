@@ -11,4 +11,4 @@ class DeliveryStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryStatus
-        fields = ('id', 'name', 'code', 'color', 'description')
+        fields = ('id', 'name', 'color', 'description')

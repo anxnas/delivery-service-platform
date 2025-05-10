@@ -2,24 +2,39 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from drf_spectacular.utils import extend_schema
-from api.schema import user_profile_schema, token_obtain_schema, token_refresh_schema
-from api.serializers import UserSerializer
+from api.serializers import UserSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer
 
 
-@extend_schema(tags=['Авторизация'])
 class CustomTokenObtainPairView(TokenObtainPairView):
-    @token_obtain_schema
+    """
+    Представление для получения JWT токенов
+    
+    Принимает username и password и возвращает access и refresh токены.
+    """
+    serializer_class = CustomTokenObtainPairSerializer
+
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
-@extend_schema(tags=['Авторизация'])
 class CustomTokenRefreshView(TokenRefreshView):
-    @token_refresh_schema
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    """
+    Представление для обновления JWT токенов
+    
+    Принимает refresh токен и возвращает новый access токен.
+    """
+    serializer_class = CustomTokenRefreshSerializer
 
-@extend_schema(tags=['Авторизация'])
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except Exception:
+            from rest_framework.exceptions import AuthenticationFailed
+            from rest_framework import status
+            raise AuthenticationFailed(
+                {"detail": "Токен недействителен или просрочен"},
+                code=status.HTTP_401_UNAUTHORIZED
+            )
+
 class UserProfileView(APIView):
     """
     Представление для получения информации о текущем пользователе
@@ -29,7 +44,6 @@ class UserProfileView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    @user_profile_schema
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)

@@ -22,9 +22,9 @@ class DeliveryServiceAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryStatus)
 class DeliveryStatusAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'color', 'description', 'created_at')
-    search_fields = ('name', 'code', 'description')
-    list_filter = ('code',)
+    list_display = ('name', 'color', 'description', 'created_at')
+    search_fields = ('name', 'description')
+    list_filter = ('name',)
 
 
 @admin.register(CargoType)
