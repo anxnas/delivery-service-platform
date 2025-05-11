@@ -59,3 +59,7 @@ local.env
 *~
 /.env
 /backend/media/
+/backend/static/
+/backend/logs/
+/frontend/node_modules/
+/frontend/package-lock.json
