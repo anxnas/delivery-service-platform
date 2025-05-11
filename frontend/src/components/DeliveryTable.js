@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   DataGrid,
   gridClasses,
@@ -16,6 +16,13 @@ const DeliveryTable = ({
   onPageChange, 
   onPageSizeChange 
 }) => {
+  // Логирование получаемых данных для отладки
+  useEffect(() => {
+    if (deliveries.length > 0) {
+      console.log('Данные доставок:', deliveries[0]);
+    }
+  }, [deliveries]);
+
   // Определение колонок таблицы
   const columns = [
     { 
@@ -28,48 +35,6 @@ const DeliveryTable = ({
       field: 'transport_number', 
       headerName: 'Номер', 
       width: 120,
-    },
-    { 
-      field: 'departure_datetime', 
-      headerName: 'Дата отправки', 
-      type: 'date',
-      flex: 1,
-      minWidth: 140,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return format(parseISO(params.value), 'dd.MM.yyyy HH:mm', { locale: ru });
-      },
-    },
-    { 
-      field: 'arrival_datetime', 
-      headerName: 'Дата прибытия', 
-      type: 'date',
-      flex: 1,
-      minWidth: 140,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return format(parseISO(params.value), 'dd.MM.yyyy HH:mm', { locale: ru });
-      },
-    },
-    { 
-      field: 'distance', 
-      headerName: 'Расстояние (км)', 
-      type: 'number',
-      width: 140,
-      valueFormatter: (params) => {
-        if (params.value == null) return '';
-        return params.value.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      },
-    },
-    { 
-      field: 'duration', 
-      headerName: 'Длительность (ч)', 
-      type: 'number',
-      width: 150,
-      valueFormatter: (params) => {
-        if (params.value == null) return '';
-        return params.value.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      },
     },
     { 
       field: 'package_type_name', 
@@ -91,15 +56,6 @@ const DeliveryTable = ({
             size="small"
           />
         );
-      },
-    },
-    { 
-      field: 'technical_condition', 
-      headerName: 'Техническое состояние', 
-      width: 180,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return params.value === 'good' ? 'Исправно' : 'Неисправно';
       },
     },
     { 

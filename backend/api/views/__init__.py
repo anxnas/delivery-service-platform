@@ -1,4 +1,4 @@
-from .user import UserProfileView, CustomTokenObtainPairView, CustomTokenRefreshView
+from .user import UserProfileView, CustomTokenObtainPairView
 from .delivery import DeliveryViewSet
 from .reference import (
     TransportModelViewSet,
@@ -11,7 +11,6 @@ from .analytics import DeliveryAnalyticsViewSet
 
 __all__ = [
     "CustomTokenObtainPairView",
-    "CustomTokenRefreshView",
     "UserProfileView",
     "DeliveryViewSet",
     "TransportModelViewSet",

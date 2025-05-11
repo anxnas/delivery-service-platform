@@ -134,33 +134,44 @@ const DashboardPage = () => {
       ) : (
         <>
           {analytics && (
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12}>
+            <>
+              {/* Основная статистика */}
+              <Paper sx={{ p: 2, mb: 3 }}>
                 <DeliveryStats analytics={analytics} />
-              </Grid>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Динамика доставок
-                  </Typography>
-                  <DeliveryChart analytics={analytics} />
-                </Paper>
-              </Grid>
-            </Grid>
+              </Paper>
+              
+              {/* Динамика доставок (график) - на 100% ширину */}
+              <Paper sx={{ p: 2, mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Динамика доставок
+                </Typography>
+                <DeliveryChart analytics={analytics} />
+              </Paper>
+            </>
           )}
 
+          {/* Список доставок или сообщение, что нет данных */}
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
               Список доставок
             </Typography>
-            <DeliveryTable 
-              deliveries={deliveries} 
-              totalCount={totalDeliveries}
-              page={filters.page - 1} // MUI DataGrid использует нумерацию с 0
-              pageSize={filters.page_size}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
+            
+            {deliveries.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1" color="text.secondary">
+                  Нет данных для отображения. Попробуйте изменить параметры фильтрации.
+                </Typography>
+              </Box>
+            ) : (
+              <DeliveryTable 
+                deliveries={deliveries} 
+                totalCount={totalDeliveries}
+                page={filters.page - 1} // MUI DataGrid использует нумерацию с 0
+                pageSize={filters.page_size}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            )}
           </Paper>
         </>
       )}

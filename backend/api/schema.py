@@ -5,9 +5,10 @@ from datetime import timedelta
 import uuid
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework_simplejwt.views import TokenRefreshView
 
 # Импорт всех представлений, которые мы будем описывать
-from api.views.user import CustomTokenObtainPairView, CustomTokenRefreshView, UserProfileView
+from api.views.user import CustomTokenObtainPairView, UserProfileView
 from api.views.delivery import DeliveryViewSet
 from api.views.reference.transport import TransportModelViewSet
 from api.views.reference.package_type import PackageTypeViewSet
@@ -497,7 +498,7 @@ extend_schema_view_refresh = extend_schema_view(
             *VALIDATION_ERROR_EXAMPLES,
             OpenApiExample(
                 'Ошибка обновления',
-                value={'detail': 'Токен недействителен или просрочен'},
+                value={'detail': 'Токен недействителен или просрочен', 'code': 'token_not_valid'},
                 response_only=True,
                 status_codes=['401'],
                 summary='Недействительный refresh токен'
@@ -508,7 +509,7 @@ extend_schema_view_refresh = extend_schema_view(
 )
 
 # Применяем схему для CustomTokenRefreshView
-CustomTokenRefreshView = extend_schema_view_refresh(CustomTokenRefreshView)
+CustomTokenRefreshView = extend_schema_view_refresh(TokenRefreshView)
 
 # Расширение схемы для профиля пользователя
 extend_schema_view_profile = extend_schema_view(

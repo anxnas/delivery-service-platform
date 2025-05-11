@@ -6,29 +6,31 @@ import {
   Toolbar,
   Typography,
   Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
   Avatar,
   Menu,
   MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper,
+  Grid,
+  Divider,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
   AccountCircle,
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserProfile } from '../services/authService';
 
 const Layout = () => {
   const { user, logoutUser } = useAuth();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [openProfileDialog, setOpenProfileDialog] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -43,23 +45,38 @@ const Layout = () => {
     logoutUser();
   };
 
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
+  const handleOpenProfile = async () => {
+    handleClose();
+    try {
+      const data = await getUserProfile();
+      setProfileData(data);
+      setOpenProfileDialog(true);
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
+    }
+  };
+
+  const handleCloseProfile = () => {
+    setOpenProfileDialog(false);
+  };
+
+  // Форматирование даты
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ru-RU', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="fixed">
         <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={toggleDrawer}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Платформа службы доставки
           </Typography>
@@ -93,7 +110,7 @@ const Layout = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={handleOpenProfile}>
                 <ListItemIcon>
                   <AccountCircle fontSize="small" />
                 </ListItemIcon>
@@ -110,27 +127,82 @@ const Layout = () => {
         </Toolbar>
       </AppBar>
       
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={toggleDrawer}
-      >
-        <Box
-          sx={{ width: 250 }}
-          role="presentation"
-          onClick={toggleDrawer}
-        >
-          <List>
-            <ListItemButton component="a" href="/">
-              <ListItemIcon>
-                <DashboardIcon />
-              </ListItemIcon>
-              <ListItemText primary="Отчеты по доставкам" />
-            </ListItemButton>
-          </List>
-          <Divider />
-        </Box>
-      </Drawer>
+      {/* Диалоговое окно профиля */}
+      <Dialog open={openProfileDialog} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Профиль пользователя
+        </DialogTitle>
+        <DialogContent>
+          {profileData && (
+            <Paper sx={{ p: 2 }} variant="outlined">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    ID пользователя
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.id}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Имя пользователя
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.username}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Email
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.email}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 1 }} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Имя
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.first_name || '—'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Фамилия
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.last_name || '—'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Администратор
+                  </Typography>
+                  <Typography variant="body1">
+                    {profileData.is_staff ? 'Да' : 'Нет'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Дата регистрации
+                  </Typography>
+                  <Typography variant="body1">
+                    {formatDate(profileData.date_joined)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseProfile}>Закрыть</Button>
+        </DialogActions>
+      </Dialog>
       
       <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
         <Outlet />

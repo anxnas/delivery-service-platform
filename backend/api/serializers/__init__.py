@@ -1,4 +1,4 @@
-from .user import UserSerializer, CustomTokenRefreshSerializer, CustomTokenObtainPairSerializer
+from .user import UserSerializer, CustomTokenObtainPairSerializer
 from .delivery import DeliveryListSerializer, DeliveryDetailSerializer
 from .reference import (
     TransportModelSerializer,
@@ -16,7 +16,6 @@ from .analytics import (
 )
 
 __all__ = [
-    "CustomTokenRefreshSerializer",
     "CustomTokenObtainPairSerializer",
     "UserSerializer",
     "DeliveryListSerializer",

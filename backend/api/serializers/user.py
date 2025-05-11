@@ -1,18 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Кастомный сериализатор для получения JWT токенов
-    """
-    pass
-
-
-class CustomTokenRefreshSerializer(TokenRefreshSerializer):
-    """
-    Кастомный сериализатор для обновления JWT токенов
     """
     pass
 
