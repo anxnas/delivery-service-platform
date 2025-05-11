@@ -20,6 +20,11 @@ const DeliveryTable = ({
   useEffect(() => {
     if (deliveries.length > 0) {
       console.log('Данные доставок:', deliveries[0]);
+      console.log('Проверка полей для отладки:');
+      console.log('departure_datetime:', deliveries[0].departure_datetime);
+      console.log('arrival_datetime:', deliveries[0].arrival_datetime);
+      console.log('distance:', deliveries[0].distance);
+      console.log('duration:', deliveries[0].duration);
     }
   }, [deliveries]);
 
@@ -35,6 +40,28 @@ const DeliveryTable = ({
       field: 'transport_number', 
       headerName: 'Номер', 
       width: 120,
+    },
+    { 
+      field: 'departure_datetime_formatted',
+      headerName: 'Дата отправки', 
+      flex: 1,
+      minWidth: 140,
+    },
+    { 
+      field: 'arrival_datetime_formatted',
+      headerName: 'Дата прибытия', 
+      flex: 1,
+      minWidth: 140,
+    },
+    { 
+      field: 'distance_formatted',
+      headerName: 'Расстояние (км)', 
+      width: 140,
+    },
+    { 
+      field: 'duration_formatted',
+      headerName: 'Длительность (ч)', 
+      width: 150,
     },
     { 
       field: 'package_type_name', 
@@ -83,12 +110,55 @@ const DeliveryTable = ({
     },
   ];
 
-  // Преобразуем идентификаторы доставок в числовые значения для DataGrid
-  const rows = deliveries.map((delivery, index) => ({
-    ...delivery,
-    // DataGrid требует уникальный id для каждой строки
-    id: delivery.id || index,
-  }));
+  // Преобразуем данные с сервера для корректного отображения в DataGrid
+  const rows = deliveries.map((delivery, index) => {
+    // Предварительное форматирование дат, расстояния и длительности
+    let departure_datetime_formatted = '';
+    let arrival_datetime_formatted = '';
+    let distance_formatted = '';
+    let duration_formatted = '';
+
+    try {
+      if (delivery.departure_datetime) {
+        departure_datetime_formatted = format(parseISO(delivery.departure_datetime), 'dd.MM.yyyy HH:mm', { locale: ru });
+      }
+    } catch (e) {
+      console.error('Ошибка форматирования даты отправки:', e);
+    }
+
+    try {
+      if (delivery.arrival_datetime) {
+        arrival_datetime_formatted = format(parseISO(delivery.arrival_datetime), 'dd.MM.yyyy HH:mm', { locale: ru });
+      }
+    } catch (e) {
+      console.error('Ошибка форматирования даты прибытия:', e);
+    }
+
+    try {
+      if (delivery.distance != null) {
+        distance_formatted = delivery.distance.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      }
+    } catch (e) {
+      console.error('Ошибка форматирования расстояния:', e);
+    }
+
+    try {
+      if (delivery.duration != null) {
+        duration_formatted = delivery.duration.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      }
+    } catch (e) {
+      console.error('Ошибка форматирования длительности:', e);
+    }
+
+    return {
+      ...delivery,
+      id: delivery.id || index,
+      departure_datetime_formatted,
+      arrival_datetime_formatted,
+      distance_formatted,
+      duration_formatted
+    };
+  });
 
   // Локализация для DataGrid
   const localeText = {
