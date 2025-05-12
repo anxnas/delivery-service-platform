@@ -289,6 +289,18 @@ DELIVERY_FILTER_PARAMETERS = [
         type=OpenApiTypes.FLOAT
     ),
     OpenApiParameter(
+        name='min_distance',
+        description='Фильтрация по минимальной дистанции доставки в километрах. Пример: 50.0',
+        required=False,
+        type=OpenApiTypes.FLOAT
+    ),
+    OpenApiParameter(
+        name='max_distance',
+        description='Фильтрация по максимальной дистанции доставки в километрах. Пример: 200.0',
+        required=False,
+        type=OpenApiTypes.FLOAT
+    ),
+    OpenApiParameter(
         name='start_date',
         description=f'Фильтрация по начальной дате доставки (формат YYYY-MM-DD). Пример: {CURRENT_DATE}',
         required=False,

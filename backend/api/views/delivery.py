@@ -110,13 +110,17 @@ class DeliveryViewSet(viewsets.ModelViewSet):
         min_duration = self.request.query_params.get('min_duration')
         max_duration = self.request.query_params.get('max_duration')
 
+        # Новые фильтры по дистанции
+        min_distance = self.request.query_params.get('min_distance')
+        max_distance = self.request.query_params.get('max_distance')
+
         if min_duration:
             # Фильтрация по минимальной продолжительности (в часах)
             try:
                 min_duration = float(min_duration)
                 queryset = queryset.filter(
                     arrival_datetime__gte=F('departure_datetime') +
-                                          timedelta(hours=min_duration)
+                                        timedelta(hours=min_duration)
                 )
             except (ValueError, TypeError):
                 pass
@@ -127,8 +131,24 @@ class DeliveryViewSet(viewsets.ModelViewSet):
                 max_duration = float(max_duration)
                 queryset = queryset.filter(
                     arrival_datetime__lte=F('departure_datetime') +
-                                          timedelta(hours=max_duration)
+                                        timedelta(hours=max_duration)
                 )
+            except (ValueError, TypeError):
+                pass
+
+        # Фильтрация по минимальной дистанции
+        if min_distance:
+            try:
+                min_distance = float(min_distance)
+                queryset = queryset.filter(distance__gte=min_distance)
+            except (ValueError, TypeError):
+                pass
+
+        # Фильтрация по максимальной дистанции
+        if max_distance:
+            try:
+                max_distance = float(max_distance)
+                queryset = queryset.filter(distance__lte=max_distance)
             except (ValueError, TypeError):
                 pass
 
