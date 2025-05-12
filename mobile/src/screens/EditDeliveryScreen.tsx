@@ -29,9 +29,12 @@ const EditDeliveryScreen: React.FC = () => {
     technical_condition: 'good',
   });
   
-  // Состояние для отображения выбора даты
+  // Состояние для отображения выбора даты и времени
   const [showDeparturePicker, setShowDeparturePicker] = useState(false);
   const [showArrivalPicker, setShowArrivalPicker] = useState(false);
+  // Add new state for time pickers on Android
+  const [showDepartureTimePicker, setShowDepartureTimePicker] = useState(false);
+  const [showArrivalTimePicker, setShowArrivalTimePicker] = useState(false);
   
   // Состояние для справочников
   const [transportModels, setTransportModels] = useState<TransportModel[]>([]);
@@ -115,6 +118,12 @@ const EditDeliveryScreen: React.FC = () => {
   const handleDepartureDateChange = (event: any, selectedDate?: Date) => {
     setShowDeparturePicker(false);
     if (selectedDate) {
+      const currentDate = new Date(formData.departure_datetime || new Date());
+      if (Platform.OS === 'android') {
+        // For Android, maintain the time portion when changing date
+        selectedDate.setHours(currentDate.getHours());
+        selectedDate.setMinutes(currentDate.getMinutes());
+      }
       handleChange('departure_datetime', selectedDate.toISOString());
     }
   };
@@ -122,7 +131,34 @@ const EditDeliveryScreen: React.FC = () => {
   const handleArrivalDateChange = (event: any, selectedDate?: Date) => {
     setShowArrivalPicker(false);
     if (selectedDate) {
+      const currentDate = new Date(formData.arrival_datetime || new Date());
+      if (Platform.OS === 'android') {
+        // For Android, maintain the time portion when changing date
+        selectedDate.setHours(currentDate.getHours());
+        selectedDate.setMinutes(currentDate.getMinutes());
+      }
       handleChange('arrival_datetime', selectedDate.toISOString());
+    }
+  };
+  
+  // Add new handlers for time selection on Android
+  const handleDepartureTimeChange = (event: any, selectedTime?: Date) => {
+    setShowDepartureTimePicker(false);
+    if (selectedTime) {
+      const currentDate = new Date(formData.departure_datetime || new Date());
+      currentDate.setHours(selectedTime.getHours());
+      currentDate.setMinutes(selectedTime.getMinutes());
+      handleChange('departure_datetime', currentDate.toISOString());
+    }
+  };
+  
+  const handleArrivalTimeChange = (event: any, selectedTime?: Date) => {
+    setShowArrivalTimePicker(false);
+    if (selectedTime) {
+      const currentDate = new Date(formData.arrival_datetime || new Date());
+      currentDate.setHours(selectedTime.getHours());
+      currentDate.setMinutes(selectedTime.getMinutes());
+      handleChange('arrival_datetime', currentDate.toISOString());
     }
   };
   
@@ -345,46 +381,140 @@ const EditDeliveryScreen: React.FC = () => {
           {/* Информация о доставке */}
           <Text variant="titleMedium" style={styles.sectionTitle}>Информация о доставке</Text>
           
-          <Button 
-            mode="outlined" 
-            onPress={() => setShowDeparturePicker(true)}
-            style={styles.dateButton}
-            icon="clock"
-          >
-            Отправка: {formData.departure_datetime ? formatDisplayDate(formData.departure_datetime) : 'Выберите дату'}
-          </Button>
-          {errors.departure_datetime && <HelperText type="error">{errors.departure_datetime}</HelperText>}
-          
-          {showDeparturePicker && formData.departure_datetime && (
-            <DateTimePicker
-              key="departure-picker-edit"
-              value={new Date(formData.departure_datetime)}
-              mode="datetime"
-              onChange={handleDepartureDateChange}
-              display="default"
-              is24Hour={true}
-            />
+          {/* For iOS - use a single datetime picker */}
+          {Platform.OS === 'ios' && (
+            <>
+              <Button 
+                mode="outlined" 
+                onPress={() => setShowDeparturePicker(true)}
+                style={styles.dateButton}
+                icon="clock"
+              >
+                Отправка: {formData.departure_datetime ? formatDisplayDate(formData.departure_datetime) : 'Выберите дату'}
+              </Button>
+              {errors.departure_datetime && <HelperText type="error">{errors.departure_datetime}</HelperText>}
+              
+              {showDeparturePicker && formData.departure_datetime && (
+                <DateTimePicker
+                  key="departure-picker-edit"
+                  value={new Date(formData.departure_datetime)}
+                  mode="datetime"
+                  onChange={handleDepartureDateChange}
+                  display="default"
+                  is24Hour={true}
+                />
+              )}
+              
+              <Button 
+                mode="outlined" 
+                onPress={() => setShowArrivalPicker(true)}
+                style={styles.dateButton}
+                icon="clock"
+              >
+                Прибытие: {formData.arrival_datetime ? formatDisplayDate(formData.arrival_datetime) : 'Выберите дату'}
+              </Button>
+              {errors.arrival_datetime && <HelperText type="error">{errors.arrival_datetime}</HelperText>}
+              
+              {showArrivalPicker && formData.arrival_datetime && (
+                <DateTimePicker
+                  key="arrival-picker-edit"
+                  value={new Date(formData.arrival_datetime)}
+                  mode="datetime"
+                  onChange={handleArrivalDateChange}
+                  display="default"
+                  is24Hour={true}
+                />
+              )}
+            </>
           )}
           
-          <Button 
-            mode="outlined" 
-            onPress={() => setShowArrivalPicker(true)}
-            style={styles.dateButton}
-            icon="clock"
-          >
-            Прибытие: {formData.arrival_datetime ? formatDisplayDate(formData.arrival_datetime) : 'Выберите дату'}
-          </Button>
-          {errors.arrival_datetime && <HelperText type="error">{errors.arrival_datetime}</HelperText>}
-          
-          {showArrivalPicker && formData.arrival_datetime && (
-            <DateTimePicker
-              key="arrival-picker-edit"
-              value={new Date(formData.arrival_datetime)}
-              mode="datetime"
-              onChange={handleArrivalDateChange}
-              display="default"
-              is24Hour={true}
-            />
+          {/* For Android - use separate date and time pickers */}
+          {Platform.OS === 'android' && (
+            <>
+              <View style={styles.dateTimeContainer}>
+                <Button 
+                  mode="outlined" 
+                  onPress={() => setShowDeparturePicker(true)}
+                  style={[styles.dateButton, styles.datePartButton]}
+                  icon="calendar"
+                >
+                  Дата отправки: {formData.departure_datetime ? format(new Date(formData.departure_datetime), 'dd.MM.yyyy', { locale: ru }) : 'Выберите'}
+                </Button>
+                
+                <Button 
+                  mode="outlined" 
+                  onPress={() => setShowDepartureTimePicker(true)}
+                  style={[styles.dateButton, styles.datePartButton]}
+                  icon="clock"
+                >
+                  Время: {formData.departure_datetime ? format(new Date(formData.departure_datetime), 'HH:mm', { locale: ru }) : 'Выберите'}
+                </Button>
+              </View>
+              {errors.departure_datetime && <HelperText type="error">{errors.departure_datetime}</HelperText>}
+              
+              {showDeparturePicker && formData.departure_datetime && (
+                <DateTimePicker
+                  key="departure-date-picker-edit"
+                  value={new Date(formData.departure_datetime)}
+                  mode="date"
+                  onChange={handleDepartureDateChange}
+                  display="default"
+                />
+              )}
+              
+              {showDepartureTimePicker && formData.departure_datetime && (
+                <DateTimePicker
+                  key="departure-time-picker-edit"
+                  value={new Date(formData.departure_datetime)}
+                  mode="time"
+                  onChange={handleDepartureTimeChange}
+                  display="default"
+                  is24Hour={true}
+                />
+              )}
+              
+              <View style={styles.dateTimeContainer}>
+                <Button 
+                  mode="outlined" 
+                  onPress={() => setShowArrivalPicker(true)}
+                  style={[styles.dateButton, styles.datePartButton]}
+                  icon="calendar"
+                >
+                  Дата прибытия: {formData.arrival_datetime ? format(new Date(formData.arrival_datetime), 'dd.MM.yyyy', { locale: ru }) : 'Выберите'}
+                </Button>
+                
+                <Button 
+                  mode="outlined" 
+                  onPress={() => setShowArrivalTimePicker(true)}
+                  style={[styles.dateButton, styles.datePartButton]}
+                  icon="clock"
+                >
+                  Время: {formData.arrival_datetime ? format(new Date(formData.arrival_datetime), 'HH:mm', { locale: ru }) : 'Выберите'}
+                </Button>
+              </View>
+              {errors.arrival_datetime && <HelperText type="error">{errors.arrival_datetime}</HelperText>}
+              
+              {showArrivalPicker && formData.arrival_datetime && (
+                <DateTimePicker
+                  key="arrival-date-picker-edit"
+                  value={new Date(formData.arrival_datetime)}
+                  mode="date"
+                  onChange={handleArrivalDateChange}
+                  display="default"
+                />
+              )}
+              
+              {showArrivalTimePicker && formData.arrival_datetime && (
+                <DateTimePicker
+                  key="arrival-time-picker-edit"
+                  value={new Date(formData.arrival_datetime)}
+                  mode="time"
+                  onChange={handleArrivalTimeChange}
+                  display="default"
+                  is24Hour={true}
+                />
+              )}
+            </>
           )}
           
           <TextInput
@@ -641,6 +771,15 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     marginHorizontal: 8,
+  },
+  dateTimeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  datePartButton: {
+    flex: 1,
+    marginHorizontal: 4,
   },
 });
 
