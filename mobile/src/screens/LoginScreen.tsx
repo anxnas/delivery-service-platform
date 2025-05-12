@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Button, Text, TextInput, HelperText } from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Alert } from 'react-native';
+import { Button, Text, TextInput, HelperText, Portal, Modal } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen: React.FC = () => {
   const { login, isLoading } = useAuth();
@@ -10,6 +11,62 @@ const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  
+  // Для отслеживания нажатий на заголовок
+  const [tapCount, setTapCount] = useState(0);
+  const [showApiUrlDialog, setShowApiUrlDialog] = useState(false);
+  const [apiUrl, setApiUrl] = useState('');
+  const tapTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Загружаем текущий URL API при открытии диалога
+  const handleOpenDialog = async () => {
+    try {
+      const currentUrl = await AsyncStorage.getItem('apiBaseUrl');
+      setApiUrl(currentUrl || 'http://localhost:8000');
+      setShowApiUrlDialog(true);
+    } catch (error) {
+      console.error('Ошибка при получении URL API:', error);
+      setApiUrl('http://localhost:8000');
+      setShowApiUrlDialog(true);
+    }
+  };
+
+  // Сохраняем новый URL API
+  const handleSaveApiUrl = async () => {
+    try {
+      await AsyncStorage.setItem('apiBaseUrl', apiUrl);
+      setShowApiUrlDialog(false);
+      Alert.alert('Успех', 'URL API успешно обновлен');
+    } catch (error) {
+      console.error('Ошибка при сохранении URL API:', error);
+      Alert.alert('Ошибка', 'Не удалось сохранить URL API');
+    }
+  };
+
+  // Обработчик нажатий на заголовок
+  const handleTitlePress = () => {
+    setTapCount(prev => {
+      const newCount = prev + 1;
+      
+      // Сбрасываем предыдущий таймер
+      if (tapTimer.current) {
+        clearTimeout(tapTimer.current);
+      }
+      
+      // Устанавливаем новый таймер для сброса счетчика через 3 секунды
+      tapTimer.current = setTimeout(() => {
+        setTapCount(0);
+      }, 3000);
+      
+      // Если достигли 5 нажатий, открываем диалог
+      if (newCount === 5) {
+        handleOpenDialog();
+        return 0; // Сбрасываем счетчик
+      }
+      
+      return newCount;
+    });
+  };
 
   const handleLogin = async () => {
     // Валидация
@@ -43,12 +100,16 @@ const LoginScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.logoContainer}>
-            <Text variant="headlineLarge" style={styles.appName}>
-              Служба Доставки
-            </Text>
-            <Text variant="bodyLarge" style={styles.subtitle}>
-              Управление доставками
-            </Text>
+            <TouchableWithoutFeedback onPress={handleTitlePress}>
+              <View>
+                <Text variant="headlineLarge" style={styles.appName}>
+                  Служба Доставки
+                </Text>
+                <Text variant="bodyLarge" style={styles.subtitle}>
+                  Управление доставками
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
 
           <View style={styles.formContainer}>
@@ -100,6 +161,43 @@ const LoginScreen: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      
+      {/* Диалог для ввода URL API */}
+      <Portal>
+        <Modal
+          visible={showApiUrlDialog}
+          onDismiss={() => setShowApiUrlDialog(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Text variant="titleMedium" style={styles.modalTitle}>
+            URL API сервера
+          </Text>
+          <TextInput
+            label="URL API"
+            value={apiUrl}
+            onChangeText={setApiUrl}
+            style={styles.apiUrlInput}
+            autoCapitalize="none"
+            keyboardType="url"
+          />
+          <View style={styles.modalButtons}>
+            <Button
+              mode="outlined"
+              onPress={() => setShowApiUrlDialog(false)}
+              style={styles.modalButton}
+            >
+              Отмена
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleSaveApiUrl}
+              style={styles.modalButton}
+            >
+              Сохранить
+            </Button>
+          </View>
+        </Modal>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -147,6 +245,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     marginTop: 16,
+  },
+  modalContainer: {
+    backgroundColor: '#2d2c31',
+    margin: 20,
+    padding: 20,
+    borderRadius: 8,
+  },
+  modalTitle: {
+    color: '#E6E1E5',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  apiUrlInput: {
+    backgroundColor: '#1C1B1F',
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 8,
   },
 });
 

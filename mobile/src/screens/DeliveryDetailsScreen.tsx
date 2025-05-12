@@ -5,11 +5,19 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { deliveryService } from '../api/deliveryService';
-import { DeliveryDetail } from '../types';
+import { DeliveryDetail, TransportModel, PackageType, Service, Status } from '../types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { referenceService } from '../api/referenceService';
 
 type DeliveryDetailsRouteProp = RouteProp<RootStackParamList, 'DeliveryDetails'>;
+
+type ReferenceData = {
+  transportModels: TransportModel[];
+  packageTypes: PackageType[];
+  services: Service[];
+  statuses: Status[];
+};
 
 const DeliveryDetailsScreen: React.FC = () => {
   const route = useRoute<DeliveryDetailsRouteProp>();
@@ -19,16 +27,44 @@ const DeliveryDetailsScreen: React.FC = () => {
   const [delivery, setDelivery] = useState<DeliveryDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [referenceData, setReferenceData] = useState<ReferenceData>({
+    transportModels: [],
+    packageTypes: [],
+    services: [],
+    statuses: []
+  });
   
-  // Загрузка детальной информации о доставке
-  const fetchDeliveryDetails = async () => {
+  // Загрузка справочников и детальной информации о доставке
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await deliveryService.getDeliveryById(id);
-      setDelivery(data);
+      
+      // Загружаем справочники
+      const [
+        transportModelsResponse, 
+        packageTypesResponse, 
+        servicesResponse, 
+        statusesResponse,
+        deliveryData
+      ] = await Promise.all([
+        referenceService.getTransportModels(),
+        referenceService.getPackageTypes(),
+        referenceService.getServices(),
+        referenceService.getStatuses(),
+        deliveryService.getDeliveryById(id)
+      ]);
+      
+      setReferenceData({
+        transportModels: transportModelsResponse.results,
+        packageTypes: packageTypesResponse.results,
+        services: servicesResponse.results,
+        statuses: statusesResponse.results
+      });
+      
+      setDelivery(deliveryData);
     } catch (err) {
-      console.error('Ошибка при загрузке данных доставки:', err);
+      console.error('Ошибка при загрузке данных:', err);
       setError('Не удалось загрузить информацию о доставке');
     } finally {
       setLoading(false);
@@ -36,7 +72,7 @@ const DeliveryDetailsScreen: React.FC = () => {
   };
   
   useEffect(() => {
-    fetchDeliveryDetails();
+    fetchData();
   }, [id]);
   
   // Обработчик проведения доставки
@@ -45,7 +81,7 @@ const DeliveryDetailsScreen: React.FC = () => {
       setLoading(true);
       await deliveryService.completeDelivery(id);
       // Обновляем данные после изменения статуса
-      await fetchDeliveryDetails();
+      await fetchData();
       Alert.alert('Успех', 'Доставка успешно проведена');
     } catch (err) {
       console.error('Ошибка при проведении доставки:', err);
@@ -98,6 +134,32 @@ const DeliveryDetailsScreen: React.FC = () => {
     });
   };
   
+  // Получение названия по ID из справочника
+  const getModelName = (id: string): string => {
+    const model = referenceData.transportModels.find(m => m.id === id);
+    return model ? model.name : id;
+  };
+  
+  const getPackageTypeName = (id: string): string => {
+    const packageType = referenceData.packageTypes.find(p => p.id === id);
+    return packageType ? packageType.name : id;
+  };
+  
+  const getServiceName = (id: string): string => {
+    const service = referenceData.services.find(s => s.id === id);
+    return service ? service.name : id;
+  };
+  
+  const getStatusName = (id: string): string => {
+    const status = referenceData.statuses.find(s => s.id === id);
+    return status ? status.name : id;
+  };
+  
+  const getStatusColor = (id: string): string => {
+    const status = referenceData.statuses.find(s => s.id === id);
+    return status ? status.color : '#CAC4D0';
+  };
+  
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -132,12 +194,34 @@ const DeliveryDetailsScreen: React.FC = () => {
             />
           </View>
           
-          <Chip
-            style={[styles.statusChip]}
-            textStyle={{ fontWeight: 'bold' }}
-          >
-            {delivery.technical_condition === 'good' ? 'Исправно' : 'Неисправно'}
-          </Chip>
+          <View style={styles.statusRow}>
+            {delivery.status && (
+              <Chip
+                style={[
+                  styles.statusChip, 
+                  { backgroundColor: `${getStatusColor(delivery.status)}20` }
+                ]}
+                textStyle={{ color: getStatusColor(delivery.status), fontWeight: 'bold' }}
+              >
+                {getStatusName(delivery.status)}
+              </Chip>
+            )}
+            
+            <Chip
+              style={[
+                styles.statusChip,
+                delivery.technical_condition === 'good' 
+                  ? { backgroundColor: 'rgba(0, 150, 0, 0.15)' } 
+                  : { backgroundColor: 'rgba(255, 0, 0, 0.15)' }
+              ]}
+              textStyle={{ 
+                color: delivery.technical_condition === 'good' ? '#00c853' : '#ff5252',
+                fontWeight: 'bold' 
+              }}
+            >
+              {delivery.technical_condition === 'good' ? 'Исправно' : 'Неисправно'}
+            </Chip>
+          </View>
           
           <Divider style={styles.divider} />
           
@@ -146,7 +230,7 @@ const DeliveryDetailsScreen: React.FC = () => {
             
             <View style={styles.infoRow}>
               <Text variant="bodyMedium" style={styles.label}>Модель:</Text>
-              <Text variant="bodyMedium" style={styles.value}>{delivery.transport_model}</Text>
+              <Text variant="bodyMedium" style={styles.value}>{getModelName(delivery.transport_model)}</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -209,14 +293,14 @@ const DeliveryDetailsScreen: React.FC = () => {
             
             <View style={styles.infoRow}>
               <Text variant="bodyMedium" style={styles.label}>Тип упаковки:</Text>
-              <Text variant="bodyMedium" style={styles.value}>{delivery.package_type}</Text>
+              <Text variant="bodyMedium" style={styles.value}>{getPackageTypeName(delivery.package_type)}</Text>
             </View>
             
             <View style={styles.servicesContainer}>
               <Text variant="bodyMedium" style={styles.label}>Услуги:</Text>
               <View style={styles.chipContainer}>
-                {delivery.services.map((service, index) => (
-                  <Chip key={index} style={styles.chip}>{service}</Chip>
+                {delivery.services.map((serviceId, index) => (
+                  <Chip key={index} style={styles.chip}>{getServiceName(serviceId)}</Chip>
                 ))}
               </View>
             </View>
@@ -281,10 +365,14 @@ const styles = StyleSheet.create({
   title: {
     color: '#E6E1E5',
   },
-  statusChip: {
-    alignSelf: 'flex-start',
+  statusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 16,
-    backgroundColor: '#49454F',
+  },
+  statusChip: {
+    marginRight: 8,
+    marginBottom: 8,
   },
   divider: {
     backgroundColor: '#49454F',

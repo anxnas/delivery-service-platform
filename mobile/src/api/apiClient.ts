@@ -1,26 +1,33 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://localhost:8000'; // Замените на реальный URL сервера
+// Значение по умолчанию, которое будет использоваться, если в AsyncStorage нет сохраненного URL
+const DEFAULT_URL = 'http://localhost:8000';
 
+// Создаем экземпляр axios без baseURL, добавим его через перехватчик
 const apiClient = axios.create({
-  baseURL: BASE_URL,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Перехватчик запросов для добавления токена авторизации
+// Перехватчик запросов для добавления токена авторизации и установки baseURL
 apiClient.interceptors.request.use(
   async (config) => {
     try {
+      // Получаем baseURL из AsyncStorage
+      const baseUrl = await AsyncStorage.getItem('apiBaseUrl') || DEFAULT_URL;
+      config.baseURL = baseUrl;
+      
+      // Получаем токен из AsyncStorage
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
-      console.error('Error getting token from AsyncStorage:', error);
+      console.error('Error getting data from AsyncStorage:', error);
+      config.baseURL = DEFAULT_URL; // Используем значение по умолчанию в случае ошибки
     }
     return config;
   },
@@ -34,6 +41,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -42,7 +50,9 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token found');
         }
         
-        const response = await axios.post(`${BASE_URL}/api/auth/token/refresh/`, {
+        const baseUrl = await AsyncStorage.getItem('apiBaseUrl') || DEFAULT_URL;
+        
+        const response = await axios.post(`${baseUrl}/api/auth/token/refresh/`, {
           refresh: refreshToken
         });
         

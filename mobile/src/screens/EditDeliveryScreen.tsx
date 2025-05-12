@@ -357,9 +357,12 @@ const EditDeliveryScreen: React.FC = () => {
           
           {showDeparturePicker && formData.departure_datetime && (
             <DateTimePicker
+              key="departure-picker-edit"
               value={new Date(formData.departure_datetime)}
               mode="datetime"
               onChange={handleDepartureDateChange}
+              display="default"
+              is24Hour={true}
             />
           )}
           
@@ -375,9 +378,12 @@ const EditDeliveryScreen: React.FC = () => {
           
           {showArrivalPicker && formData.arrival_datetime && (
             <DateTimePicker
+              key="arrival-picker-edit"
               value={new Date(formData.arrival_datetime)}
               mode="datetime"
               onChange={handleArrivalDateChange}
+              display="default"
+              is24Hour={true}
             />
           )}
           

@@ -53,17 +53,23 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({ delivery, onDelete, onCompl
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
             <IconButton icon="clock-outline" size={20} style={styles.iconButton} iconColor="#CAC4D0" />
-            <Text variant="bodyMedium" style={styles.info}>{delivery.duration || 2} часа</Text>
+            <Text variant="bodyMedium" style={styles.info} numberOfLines={1} ellipsizeMode="tail">
+              {delivery.duration || 2} часа
+            </Text>
           </View>
           
           <View style={styles.infoItem}>
             <IconButton icon="map-marker-distance" size={20} style={styles.iconButton} iconColor="#CAC4D0" />
-            <Text variant="bodyMedium" style={styles.info}>{delivery.distance || 2} км</Text>
+            <Text variant="bodyMedium" style={styles.info} numberOfLines={1} ellipsizeMode="tail">
+              {delivery.distance || 2} км
+            </Text>
           </View>
           
           <View style={styles.infoItem}>
             <IconButton icon="package-variant" size={20} style={styles.iconButton} iconColor="#CAC4D0" />
-            <Text variant="bodyMedium" style={styles.info}>{delivery.cargo_type || delivery.package_type_name || 'Не указан'}</Text>
+            <Text variant="bodyMedium" style={styles.info} numberOfLines={1} ellipsizeMode="tail">
+              {delivery.cargo_type || delivery.package_type_name || 'Не указан'}
+            </Text>
           </View>
         </View>
         
@@ -128,13 +134,14 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 8,
+    flex: 1,
+    marginRight: 4,
   },
   iconButton: {
     margin: 0,
@@ -143,6 +150,7 @@ const styles = StyleSheet.create({
   info: {
     color: '#CAC4D0',
     fontSize: 12,
+    flex: 1,
   },
   statusRow: {
     flexDirection: 'row',

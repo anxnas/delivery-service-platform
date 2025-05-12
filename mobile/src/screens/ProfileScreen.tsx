@@ -1,13 +1,68 @@
-import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Avatar, Button, Card, Divider, List, Text } from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Alert, TouchableWithoutFeedback } from 'react-native';
+import { Avatar, Button, Card, Divider, List, Text, TextInput, Portal, Modal } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
+  const [tapCount, setTapCount] = useState(0);
+  const [showApiUrlDialog, setShowApiUrlDialog] = useState(false);
+  const [apiUrl, setApiUrl] = useState('');
+  const tapTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Загружаем текущий URL API при открытии диалога
+  const handleOpenDialog = async () => {
+    try {
+      const currentUrl = await AsyncStorage.getItem('apiBaseUrl');
+      setApiUrl(currentUrl || 'http://localhost:8000');
+      setShowApiUrlDialog(true);
+    } catch (error) {
+      console.error('Ошибка при получении URL API:', error);
+      setApiUrl('http://localhost:8000');
+      setShowApiUrlDialog(true);
+    }
+  };
+
+  // Сохраняем новый URL API
+  const handleSaveApiUrl = async () => {
+    try {
+      await AsyncStorage.setItem('apiBaseUrl', apiUrl);
+      setShowApiUrlDialog(false);
+      Alert.alert('Успех', 'URL API успешно обновлен. Перезапустите приложение для применения изменений.');
+    } catch (error) {
+      console.error('Ошибка при сохранении URL API:', error);
+      Alert.alert('Ошибка', 'Не удалось сохранить URL API');
+    }
+  };
+
+  // Обработчик нажатий на заголовок экрана
+  const handleTitlePress = () => {
+    setTapCount(prev => {
+      const newCount = prev + 1;
+      
+      // Сбрасываем предыдущий таймер
+      if (tapTimer.current) {
+        clearTimeout(tapTimer.current);
+      }
+      
+      // Устанавливаем новый таймер для сброса счетчика через 2 секунды
+      tapTimer.current = setTimeout(() => {
+        setTapCount(0);
+      }, 2000);
+      
+      // Если достигли 3 нажатий, открываем диалог
+      if (newCount === 3) {
+        handleOpenDialog();
+        return 0; // Сбрасываем счетчик
+      }
+      
+      return newCount;
+    });
+  };
 
   // Форматирование даты
   const formatDate = (dateString: string): string => {
@@ -55,21 +110,23 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['right', 'left']}>
-      <View style={styles.profileContainer}>
-        <Avatar.Text 
-          size={80} 
-          label={getInitials()} 
-          style={styles.avatar}
-        />
-        
-        <Text variant="headlineSmall" style={styles.nameText}>
-          {user?.first_name} {user?.last_name}
-        </Text>
-        
-        <Text variant="titleMedium" style={styles.usernameText}>
-          @{user?.username}
-        </Text>
-      </View>
+      <TouchableWithoutFeedback onPress={handleTitlePress}>
+        <View style={styles.profileContainer}>
+          <Avatar.Text 
+            size={80} 
+            label={getInitials()} 
+            style={styles.avatar}
+          />
+          
+          <Text variant="headlineSmall" style={styles.nameText}>
+            {user?.first_name} {user?.last_name}
+          </Text>
+          
+          <Text variant="titleMedium" style={styles.usernameText}>
+            @{user?.username}
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
       
       <Card style={styles.card}>
         <Card.Content>
@@ -127,6 +184,43 @@ const ProfileScreen: React.FC = () => {
           Выйти из системы
         </Button>
       </View>
+
+      {/* Диалог для ввода URL API */}
+      <Portal>
+        <Modal
+          visible={showApiUrlDialog}
+          onDismiss={() => setShowApiUrlDialog(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Text variant="titleMedium" style={styles.modalTitle}>
+            URL API сервера
+          </Text>
+          <TextInput
+            label="URL API"
+            value={apiUrl}
+            onChangeText={setApiUrl}
+            style={styles.apiUrlInput}
+            autoCapitalize="none"
+            keyboardType="url"
+          />
+          <View style={styles.modalButtons}>
+            <Button
+              mode="outlined"
+              onPress={() => setShowApiUrlDialog(false)}
+              style={styles.modalButton}
+            >
+              Отмена
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleSaveApiUrl}
+              style={styles.modalButton}
+            >
+              Сохранить
+            </Button>
+          </View>
+        </Modal>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -178,6 +272,29 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     paddingVertical: 8,
+  },
+  modalContainer: {
+    backgroundColor: '#2d2c31',
+    margin: 20,
+    padding: 20,
+    borderRadius: 8,
+  },
+  modalTitle: {
+    color: '#E6E1E5',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  apiUrlInput: {
+    backgroundColor: '#1C1B1F',
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 8,
   },
 });
 
