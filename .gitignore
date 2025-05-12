@@ -63,3 +63,6 @@ local.env
 /backend/logs/
 /frontend/node_modules/
 /frontend/package-lock.json
+/mobile/node_modules/
+/mobile/package-lock.json
+/mobile/schema.yaml

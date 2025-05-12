@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Delivery Service",
+    "slug": "delivery-service-platform",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": null,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+    }
+  }
+} 
