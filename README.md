@@ -115,7 +115,10 @@ cp .env.example .env
 
 5. Запустить проект с помощью Docker Compose:
 ```bash
-docker-compose up -d
+docker-compose up --build
+
+# Продакшн версия с использованием nginx
+docker-compose --profile prod up --build
 ```
 
 
