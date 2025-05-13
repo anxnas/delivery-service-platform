@@ -11,10 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем файлы зависимостей
-COPY requirements/base.txt requirements/base.txt
+COPY requirements/prod.txt requirements/prod.txt
 
 # Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements/base.txt
+RUN pip install --no-cache-dir -r requirements/prod.txt
 
 # Копируем весь проект
 COPY . .

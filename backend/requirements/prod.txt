@@ -1,0 +1,23 @@
+# Основной веб-фреймворк
+Django==5.0.4
+djangorestframework==3.15.1
+djangorestframework-simplejwt==5.5.0
+django-filter==25.1
+
+# База данных
+psycopg2-binary==2.9.9
+
+# Обработка окружения
+python-dotenv==1.1.0
+
+# CORS
+django-cors-headers==4.3.1
+
+# Документация API
+drf-spectacular==0.27.2
+
+# Логирование
+loguru==0.7.3
+
+# Работа с ASGI
+uvicorn==0.29.0
