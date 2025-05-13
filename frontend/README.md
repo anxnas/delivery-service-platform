@@ -8,6 +8,8 @@
 - [Архитектура](#архитектура)
 - [Требования](#требования)
 - [Установка и настройка](#установка-и-настройка)
+- [Конфигурация Nginx](#конфигурация-nginx)
+- [Запуск через Dockerfile](#запуск-через-dockerfile)
 
 ## Технологический стек
 
@@ -50,7 +52,7 @@ npm install
 yarn install
 ```
 
-2. Создайте файл `.env.local` в корне директории frontend со следующими переменными:
+2. Создайте файл `.env` в корне директории frontend со следующими переменными:
 
 ```
 REACT_APP_API_URL=http://localhost:8000/api
@@ -67,13 +69,42 @@ yarn start
 
 Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
 
-### Установка с использованием Docker
+## Конфигурация Nginx
 
-Если вы используете Docker для разработки всего проекта:
+Для продакшн-сборки необходимо:
+1. В файле `nginx/nginx.conf` указать доменные имена в `server_name`:
+   ```nginx
+   server_name localhost, example.com, api.example.com;
+   ```
+   Или заменить `localhost` на конкретный домен:
+   ```nginx
+   server_name delivery-service.com;
+   ```
 
-```bash
-# В корневой директории проекта
-docker-compose up -d
-```
+## Запуск через Dockerfile
 
-Frontend будет доступен по адресу [http://localhost:3000](http://localhost:3000)
+Вместо `docker-compose` можно использовать напрямую `Dockerfile`:
+
+1. Соберите образ:
+   ```bash
+   docker build -t frontend -f frontend/Dockerfile .
+   ```
+
+2. Запустите контейнер:
+   ```bash
+   # Сборка образа с тегом
+   docker build -t frontend .
+
+   # Запуск контейнера с пробросом портов и именем
+   docker run -d -p 3000:80 --name frontend frontend
+
+   # Альтернативный вариант с пробросом переменных окружения
+   # docker run -d -p 3000:80 --env-file .env --name frontend
+   ```
+
+### Важные изменения
+- Обновите `REACT_APP_API_URL` в `.env` если меняется домен:
+  ```
+  REACT_APP_API_URL=http://api.example.com/api
+  ```
+- Если запускаете через Docker измените nginx.conf

@@ -55,12 +55,12 @@ source venv/bin/activate  # На Windows: venv\Scripts\activate
 2. Установите зависимости:
 
 ```bash
-pip install -r requirements/base.txt  # Для разработки: requirements/dev.txt
+pip install -r requirements/base.txt  # Для продакшана: requirements/prod.txt
 ```
 
 3. Настройте переменные окружения:
 
-Создайте файл `.env` в корне проекта и настройте следующие переменные:
+Создайте файл `.env` в корне проекта и настройте следующие переменные (база для разработки):
 
 ```
 POSTGRES_HOST=localhost
@@ -93,12 +93,15 @@ python manage.py runserver
 
 ### Установка с использованием Docker
 
-1. Убедитесь, что Docker и Docker Compose установлены
-
-2. Запустите контейнеры:
-
 ```bash
-docker-compose up -d
+# Сборка образа с тегом
+docker build -t backend .
+
+# Базовый запуск (порт 8000)
+docker run -d -p 8000:8000 --name backend backend
+
+# С пробросом .env файла
+docker run -d -p 8000:8000 --env-file .env --name backend backend
 ```
 
 

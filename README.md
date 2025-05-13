@@ -9,8 +9,6 @@
 - [Компоненты платформы](#компоненты-платформы)
 - [Требования](#требования)
 - [Установка и настройка](#установка-и-настройка)
-- [Разработка](#разработка)
-- [Развертывание](#развертывание)
 - [Документация API](#документация-api)
 - [Тестирование](#тестирование)
 - [Поддержка и обратная связь](#поддержка-и-обратная-связь)
@@ -69,16 +67,16 @@
 ### Для разработки
 
 - **Backend**:
-  - Python 3.8+
+  - Python 3.10+
   - PostgreSQL 14+
   - Virtualenv или Docker
 
 - **Frontend**:
-  - Node.js 14+
-  - npm 7+ или yarn 1.22+
+  - Node.js 22+
+  - npm 10+
 
 - **Mobile**:
-  - Node.js 14+
+  - Node.js 22+
   - Expo CLI
   - Eas CLI
 
@@ -105,7 +103,17 @@ cp .env.example .env
 
 3. Настроить переменные окружения в файле `.env`
 
-4. Запустить проект с помощью Docker Compose:
+4. Для продакшн-сборки необходимо:
+- В файле `nginx/nginx.conf` указать доменные имена в `server_name`:
+   ```nginx
+   server_name localhost, example.com, api.example.com;
+   ```
+- Или заменить `localhost` на конкретный домен:
+   ```nginx
+   server_name delivery-service.com;
+   ```
+
+5. Запустить проект с помощью Docker Compose:
 ```bash
 docker-compose up -d
 ```
@@ -118,32 +126,6 @@ docker-compose up -d
 - [Frontend README](./frontend/README.md)
 - [Mobile README](./mobile/README.md)
 
-## Разработка
-
-### Запуск для разработки
-
-1. **Backend**:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # На Windows: venv\Scripts\activate
-pip install -r requirements/dev.txt
-python manage.py runserver
-```
-
-2. **Frontend**:
-```bash
-cd frontend
-npm install
-npm start
-```
-
-3. **Mobile**:
-```bash
-cd mobile
-npm install
-npm start
-```
 
 ## Документация API
 
